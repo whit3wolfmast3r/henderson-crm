@@ -128,7 +128,6 @@ export default function SalesCRM() {
       .trim();
   };
 
-  // Direct 1-click registries with preloaded GET URLs
   const openOpenCorporates = (entityName) => {
     const clean = cleanEntityName(entityName);
     window.open(`https://opencorporates.com/companies/us_nv?q=${encodeURIComponent(clean)}`, '_blank');
@@ -139,7 +138,9 @@ export default function SalesCRM() {
     window.open(`https://www.bizapedia.com/search.aspx?company=${encodeURIComponent(clean)}`, '_blank');
   };
 
-  const copyPhone = (id, phone) => {
+  const copyPhone = (e, id, phone) => {
+    e.preventDefault();
+    e.stopPropagation();
     const clean = phone.replace(/[^0-9]/g, '');
     navigator.clipboard.writeText(clean);
     setCopiedId(id);
@@ -245,6 +246,7 @@ export default function SalesCRM() {
           {businesses.map((biz) => {
             const displayName = biz.dba || biz.entity_name;
             const targetPhone = biz.phone_number || biz.municipal_phone || '';
+            const dialNumber = targetPhone.replace(/\D/g, '');
             const statusState = savedStatus[biz.id];
 
             return (
@@ -283,20 +285,26 @@ export default function SalesCRM() {
                     </span>
                   </div>
 
-                  {/* Phone Display Bar */}
-                  <div className="mb-3 bg-slate-950/80 p-2.5 rounded-lg border border-slate-800">
+                  {/* Phone Display Bar with Click-To-Dial & Copy */}
+                  <div className="mb-3 bg-slate-950/80 p-2 rounded-lg border border-slate-800">
                     {targetPhone ? (
-                      <div className="flex items-center justify-between bg-slate-900 border border-slate-700/80 px-3 py-1.5 rounded-lg">
-                        <div className="flex items-center gap-2 overflow-hidden">
-                          <Phone className="w-4 h-4 text-cyan-400 shrink-0" />
-                          <span className="font-mono font-bold text-sm text-cyan-300 tracking-wide select-all truncate">
-                            {targetPhone}
-                          </span>
-                        </div>
+                      <div className="flex items-center justify-between bg-slate-900 border border-slate-700/80 rounded-lg overflow-hidden group hover:border-cyan-500 transition-colors">
+                        {/* Tap to Call via RingCentral / Native Dialer */}
+                        <a
+                          href={`tel:${dialNumber}`}
+                          title="Click to dial with RingCentral / Phone"
+                          className="flex items-center gap-2 flex-1 px-3 py-1.5 text-cyan-300 font-mono font-bold text-sm hover:text-cyan-200 transition-colors overflow-hidden"
+                        >
+                          <Phone className="w-4 h-4 text-cyan-400 shrink-0 group-hover:scale-110 transition-transform" />
+                          <span className="truncate tracking-wide">{targetPhone}</span>
+                        </a>
+
+                        {/* Copy Phone Icon */}
                         <button
-                          onClick={() => copyPhone(biz.id, targetPhone)}
+                          type="button"
+                          onClick={(e) => copyPhone(e, biz.id, targetPhone)}
                           title="Copy phone number"
-                          className="text-slate-400 hover:text-white p-1 rounded hover:bg-slate-800 transition shrink-0 ml-1"
+                          className="px-2.5 py-2 text-slate-400 hover:text-white border-l border-slate-700/80 hover:bg-slate-800 transition-colors shrink-0"
                         >
                           {copiedId === biz.id ? (
                             <span className="text-[10px] font-bold text-emerald-400 flex items-center gap-0.5">

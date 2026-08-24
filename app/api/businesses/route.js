@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://yxtbkhsgbswwmvmwwmib.supabase.co';
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_secret_mgLLAcFCjxi8npt8v2FEIQ_GjEM1aQR';
-
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
 // In-memory cache for category pills and counts
 let cachedCategories = null;
