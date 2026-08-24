@@ -199,7 +199,7 @@ export default function SalesCRM() {
 
   return (
     <div className="max-w-[1600px] mx-auto px-4 py-6">
-      {/* Header with BLD Logo & Direct Quick-Action Toolbar */}
+      {/* Header with Mobile-Optimized Action Bar */}
       <header className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-800 pb-5 gap-4">
         <div className="flex items-center gap-4">
           <img 
@@ -215,34 +215,36 @@ export default function SalesCRM() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2.5">
-          {/* Digital Business Card Button */}
+        {/* Action Buttons: 2x2 Grid on Mobile, Flex on Desktop */}
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
+          {/* Digital Business Card */}
           <button
             onClick={() => setShowCardModal(true)}
-            className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 text-xs font-bold px-3.5 py-2.5 rounded-lg shadow transition"
+            className="flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 text-xs font-bold px-3 py-2.5 rounded-lg shadow transition"
           >
             <IdCard className="w-4 h-4 text-cyan-400" /> David&apos;s Card
           </button>
 
-          {/* Quick Pitch & Samples Modal Trigger */}
+          {/* Quick Pitch & Samples Modal */}
           <button
             onClick={() => setShowPitchModal(true)}
-            className="flex items-center gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-lg transition"
+            className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold px-3 py-2.5 rounded-lg shadow transition"
           >
             <Sparkles className="w-4 h-4 text-amber-300" /> Pitch & Samples
           </button>
 
-          {/* Dedicated Full Page Link */}
+          {/* Full Deck Page (Always Visible on Mobile) */}
           <Link
             href="/deck"
             target="_blank"
-            className="hidden sm:flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold px-3 py-2.5 rounded-lg border border-slate-800 transition"
+            className="flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold px-3 py-2.5 rounded-lg shadow transition"
           >
             <ExternalLink className="w-3.5 h-3.5 text-cyan-400" /> Deck & Pricing
           </Link>
 
-          <div className="text-xs bg-slate-900 border border-slate-800 px-3.5 py-2.5 rounded-lg text-slate-300">
-            Total Leads: <span className="text-cyan-400 font-bold">{pagination.total.toLocaleString()}</span>
+          {/* Total Leads Badge */}
+          <div className="flex items-center justify-center text-xs bg-slate-900 border border-slate-800 px-3 py-2.5 rounded-lg text-slate-300">
+            Leads: <span className="text-cyan-400 font-bold ml-1">{pagination.total.toLocaleString()}</span>
           </div>
         </div>
       </header>
@@ -561,7 +563,6 @@ export default function SalesCRM() {
               <p className="text-xs text-cyan-400 font-semibold">Campaign Director • Better Local Dealz</p>
               <p className="text-[11px] text-slate-400 mt-1">10,000 Door Hanger Residential Distributions</p>
 
-              {/* Direct Contact Cards */}
               <div className="mt-5 space-y-2.5 text-left text-xs">
                 <a
                   href="tel:7024259299"
@@ -592,7 +593,6 @@ export default function SalesCRM() {
                 </a>
               </div>
 
-              {/* Quick Actions */}
               <div className="mt-5 grid grid-cols-2 gap-2.5">
                 <a
                   href="https://calendly.com/david-bldealz/demo"
@@ -616,7 +616,7 @@ export default function SalesCRM() {
         </div>
       )}
 
-      {/* Modal 2: Sales Pitch, Scanned Flyer Samples & Direct Stripe Checkout */}
+      {/* Modal 2: Sales Pitch, Samples & Direct Stripe Checkout */}
       {showPitchModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
@@ -638,7 +638,7 @@ export default function SalesCRM() {
             {/* Modal Body */}
             <div className="p-6 overflow-y-auto space-y-6">
               
-              {/* David Card Banner with Demo Link & Phone */}
+              {/* David Banner */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-950/70 p-4 rounded-xl border border-slate-800">
                 <div className="flex items-center gap-3.5">
                   <img
@@ -717,7 +717,6 @@ export default function SalesCRM() {
                     className="max-h-[480px] w-auto object-contain rounded-lg shadow-2xl border border-slate-800"
                   />
 
-                  {/* Direct Stripe Checkout Button for the Selected Tier */}
                   {activeSample.stripeUrl && (
                     <div className="mt-4 flex flex-col sm:flex-row items-center gap-3">
                       <a
