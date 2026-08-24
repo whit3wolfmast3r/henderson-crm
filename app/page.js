@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { 
-  Search, Globe, Phone, Star, MapPin, Building2, 
+  Search, Globe, Phone, Star, MapPin, 
   UserCheck, ExternalLink, Check, Copy, FileText, SearchCheck, 
   Loader2, Sparkles, X, Image as ImageIcon, Calendar, Video
 } from 'lucide-react';
@@ -29,11 +29,11 @@ const DISPOSITION_COLORS = {
 };
 
 const FLYER_SAMPLES = [
-  { id: 'standard', label: 'Standard ($199)', file: 'standard' },
-  { id: 'large', label: 'Large Spotlight', file: 'large' },
-  { id: 'jumbo', label: 'Jumbo Half-Side', file: 'jumbo' },
-  { id: 'front', label: 'Front Cover', file: 'front' },
-  { id: 'custom', label: 'Full Custom', file: 'custom' }
+  { id: 'standard', label: 'Standard ($199)', file: 'standard.jpg' },
+  { id: 'large', label: 'Large Spotlight', file: 'large.jpg' },
+  { id: 'jumbo', label: 'Jumbo Half-Side', file: 'jumbo.jpg' },
+  { id: 'front', label: 'Front Cover', file: 'front.jpg' },
+  { id: 'custom', label: 'Full Custom', file: 'custom.jpg' }
 ];
 
 export default function SalesCRM() {
@@ -48,7 +48,7 @@ export default function SalesCRM() {
   const [savedStatus, setSavedStatus] = useState({});
   const [copiedId, setCopiedId] = useState(null);
 
-  // Sales Deck Modal State
+  // Sales Pitch & Image Modal State
   const [showPitchModal, setShowPitchModal] = useState(false);
   const [activeSample, setActiveSample] = useState(FLYER_SAMPLES[0]);
 
@@ -163,16 +163,23 @@ export default function SalesCRM() {
 
   return (
     <div className="max-w-[1600px] mx-auto px-4 py-6">
-      {/* Header */}
+      {/* Header with BLD Logo */}
       <header className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-800 pb-5 gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white flex items-center gap-2.5">
-            <Building2 className="text-cyan-400 w-7 h-7" /> Henderson Business Sales & Outreach CRM
-          </h1>
-          <p className="text-slate-400 text-xs mt-1">10,000 Door Hanger Campaign • Instant Officer Registries • Auto-Saving CRM</p>
+        <div className="flex items-center gap-4">
+          <img 
+            src="/BLD.png" 
+            alt="Better Local Dealz" 
+            className="h-12 w-auto object-contain rounded-lg p-1 bg-slate-900 border border-slate-800 shadow"
+          />
+          <div>
+            <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
+              Henderson Outreach CRM
+            </h1>
+            <p className="text-slate-400 text-xs mt-0.5">10,000 Door Hanger Campaign • Instant Officer Registries • Auto-Saving Leads</p>
+          </div>
         </div>
+
         <div className="flex items-center gap-3">
-          {/* Quick Pop-up Modal Button */}
           <button
             onClick={() => setShowPitchModal(true)}
             className="flex items-center gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-lg transition"
@@ -180,7 +187,6 @@ export default function SalesCRM() {
             <Sparkles className="w-4 h-4 text-amber-300" /> Pitch & Samples
           </button>
 
-          {/* Full Page Link for 2nd Screen Tab */}
           <Link
             href="/deck"
             target="_blank"
@@ -320,7 +326,6 @@ export default function SalesCRM() {
                   <div className="mb-3 bg-slate-950/80 p-2 rounded-lg border border-slate-800">
                     {targetPhone ? (
                       <div className="flex items-center justify-between bg-slate-900 border border-slate-700/80 rounded-lg overflow-hidden group hover:border-cyan-500 transition-colors">
-                        {/* Dial via RingCentral / Mobile Dialer */}
                         <a
                           href={`tel:${dialNumber}`}
                           title="Click to dial with RingCentral / Phone"
@@ -330,7 +335,6 @@ export default function SalesCRM() {
                           <span className="truncate tracking-wide">{targetPhone}</span>
                         </a>
 
-                        {/* Copy Phone Icon */}
                         <button
                           type="button"
                           onClick={(e) => copyPhone(e, biz.id, targetPhone)}
@@ -488,16 +492,16 @@ export default function SalesCRM() {
         </div>
       )}
 
-      {/* Sales Pitch & Flyer Collateral Modal */}
+      {/* Sales Pitch, David Profile & Flyer Collateral Modal */}
       {showPitchModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
             
             {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/60">
-              <div className="flex items-center gap-2.5">
-                <Sparkles className="w-5 h-5 text-cyan-400" />
-                <h2 className="text-base font-bold text-white">Better Local Dealz • Sales Script & Scanned Collateral</h2>
+              <div className="flex items-center gap-3">
+                <img src="/BLD.png" alt="BLD" className="h-8 w-auto object-contain" />
+                <h2 className="text-base font-bold text-white">Better Local Dealz • Outreach Kit & Collateral</h2>
               </div>
               <button
                 onClick={() => setShowPitchModal(false)}
@@ -510,27 +514,41 @@ export default function SalesCRM() {
             {/* Modal Body */}
             <div className="p-6 overflow-y-auto space-y-6">
               
-              {/* Quick Links Banner */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-950/70 p-4 rounded-xl border border-slate-800">
-                <a
-                  href="https://calendly.com/david-bldealz/30min"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2.5 px-4 rounded-lg transition text-xs shadow"
-                >
-                  <Calendar className="w-4 h-4" /> Book Call on Calendly
-                </a>
-                <a
-                  href="https://zoom.us/join"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-4 rounded-lg transition text-xs shadow"
-                >
-                  <Video className="w-4 h-4" /> Launch Zoom
-                </a>
+              {/* David Profile & Direct Booking Action */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-950/70 p-4 rounded-xl border border-slate-800">
+                <div className="flex items-center gap-3.5">
+                  <img
+                    src="/david.png"
+                    alt="David"
+                    className="w-14 h-14 rounded-full border-2 border-cyan-400 object-cover shadow-lg shrink-0"
+                  />
+                  <div>
+                    <h4 className="text-sm font-bold text-white">David • Campaign Director</h4>
+                    <p className="text-xs text-cyan-400 font-medium">Better Local Dealz Henderson</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 w-full sm:w-auto">
+                  <a
+                    href="https://calendly.com/david-bldealz/30min"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 px-3.5 rounded-lg transition text-xs shadow"
+                  >
+                    <Calendar className="w-3.5 h-3.5" /> Book Discovery Call
+                  </a>
+                  <a
+                    href="https://zoom.us/join"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 px-3.5 rounded-lg transition text-xs shadow"
+                  >
+                    <Video className="w-3.5 h-3.5" /> Launch Zoom
+                  </a>
+                </div>
               </div>
 
-              {/* Pitch Script Section */}
+              {/* Outreach Script Section */}
               <div className="space-y-2.5">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
                   <FileText className="w-4 h-4" /> Phone Outreach Script
@@ -548,7 +566,6 @@ export default function SalesCRM() {
                   <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
                     <ImageIcon className="w-4 h-4" /> Scanned Flyer Samples
                   </h3>
-                  {/* Image Tab Buttons */}
                   <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 overflow-x-auto">
                     {FLYER_SAMPLES.map((sample) => (
                       <button
@@ -569,18 +586,12 @@ export default function SalesCRM() {
                 {/* Scanned Photo Display */}
                 <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col items-center justify-center min-h-[400px]">
                   <img
-                    src={`/${activeSample.file}.png`}
+                    src={`/${activeSample.file}`}
                     alt={activeSample.label}
                     className="max-h-[500px] w-auto object-contain rounded-lg shadow-2xl border border-slate-800"
-                    onError={(e) => {
-                      if (!e.target.dataset.tried) {
-                        e.target.dataset.tried = 'true';
-                        e.target.src = `/${activeSample.file}.jpg`;
-                      }
-                    }}
                   />
                   <span className="text-[11px] text-slate-500 mt-2.5">
-                    Displaying: <code className="text-cyan-400 font-mono">public/{activeSample.file}.png</code>
+                    Displaying: <code className="text-cyan-400 font-mono">public/{activeSample.file}</code>
                   </span>
                 </div>
               </div>
