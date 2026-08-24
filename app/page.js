@@ -2,9 +2,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { 
-  Search, Globe, Phone, Star, MapPin, 
+  Search, Globe, Phone, Star, MapPin, Mail,
   UserCheck, ExternalLink, Check, Copy, FileText, SearchCheck, 
-  Loader2, Sparkles, X, Image as ImageIcon, Calendar, Video
+  Loader2, Sparkles, X, Image as ImageIcon, Calendar, Video, CreditCard, IdCard
 } from 'lucide-react';
 
 const DISPOSITIONS = [
@@ -29,11 +29,46 @@ const DISPOSITION_COLORS = {
 };
 
 const FLYER_SAMPLES = [
-  { id: 'standard', label: 'Standard ($199)', file: 'standard.jpg' },
-  { id: 'large', label: 'Large Spotlight', file: 'large.jpg' },
-  { id: 'jumbo', label: 'Jumbo Half-Side', file: 'jumbo.jpg' },
-  { id: 'front', label: 'Front Cover', file: 'front.jpg' },
-  { id: 'custom', label: 'Full Custom', file: 'custom.jpg' }
+  { 
+    id: 'standard', 
+    label: 'Standard ($199)', 
+    file: 'standard.jpg',
+    price: '$199',
+    stripeUrl: 'https://buy.stripe.com/28o3cu7iGap951K7ss',
+    btnText: 'Buy $199 Standard'
+  },
+  { 
+    id: 'large', 
+    label: 'Large Spotlight ($349)', 
+    file: 'large.jpg',
+    price: '$349',
+    stripeUrl: 'https://buy.stripe.com/dR68wO0UigNxam49AB',
+    btnText: 'Buy $349 Large'
+  },
+  { 
+    id: 'jumbo', 
+    label: 'Jumbo Half-Side ($599)', 
+    file: 'jumbo.jpg',
+    price: '$599',
+    stripeUrl: 'https://buy.stripe.com/14k00i7iGbtd8dW4gi',
+    btnText: 'Buy $599 Jumbo'
+  },
+  { 
+    id: 'custom', 
+    label: 'Full Custom', 
+    file: 'custom.jpg',
+    price: 'Custom Quote',
+    stripeUrl: 'mailto:david@bldealz.com?subject=Custom%20Door%20Hanger%20Campaign%20Inquiry',
+    btnText: 'Email for Custom Quote'
+  },
+  { 
+    id: 'front', 
+    label: 'Front Cover', 
+    file: 'front.jpg',
+    price: null,
+    stripeUrl: null,
+    btnText: null
+  }
 ];
 
 export default function SalesCRM() {
@@ -48,8 +83,9 @@ export default function SalesCRM() {
   const [savedStatus, setSavedStatus] = useState({});
   const [copiedId, setCopiedId] = useState(null);
 
-  // Sales Pitch & Image Modal State
+  // Modals
   const [showPitchModal, setShowPitchModal] = useState(false);
+  const [showCardModal, setShowCardModal] = useState(false);
   const [activeSample, setActiveSample] = useState(FLYER_SAMPLES[0]);
 
   const saveTimers = useRef({});
@@ -163,7 +199,7 @@ export default function SalesCRM() {
 
   return (
     <div className="max-w-[1600px] mx-auto px-4 py-6">
-      {/* Header with BLD Logo */}
+      {/* Header with BLD Logo & Direct Quick-Action Toolbar */}
       <header className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-800 pb-5 gap-4">
         <div className="flex items-center gap-4">
           <img 
@@ -179,7 +215,16 @@ export default function SalesCRM() {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
+          {/* Digital Business Card Button */}
+          <button
+            onClick={() => setShowCardModal(true)}
+            className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 text-xs font-bold px-3.5 py-2.5 rounded-lg shadow transition"
+          >
+            <IdCard className="w-4 h-4 text-cyan-400" /> David&apos;s Card
+          </button>
+
+          {/* Quick Pitch & Samples Modal Trigger */}
           <button
             onClick={() => setShowPitchModal(true)}
             className="flex items-center gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-lg transition"
@@ -187,15 +232,16 @@ export default function SalesCRM() {
             <Sparkles className="w-4 h-4 text-amber-300" /> Pitch & Samples
           </button>
 
+          {/* Dedicated Full Page Link */}
           <Link
             href="/deck"
             target="_blank"
-            className="hidden sm:flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold px-3 py-2.5 rounded-lg border border-slate-700 transition"
+            className="hidden sm:flex items-center gap-1.5 bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-semibold px-3 py-2.5 rounded-lg border border-slate-800 transition"
           >
-            <ExternalLink className="w-3.5 h-3.5 text-cyan-400" /> Open Deck Page
+            <ExternalLink className="w-3.5 h-3.5 text-cyan-400" /> Deck & Pricing
           </Link>
 
-          <div className="text-xs bg-slate-900 border border-slate-800 px-3.5 py-2 rounded-lg text-slate-300">
+          <div className="text-xs bg-slate-900 border border-slate-800 px-3.5 py-2.5 rounded-lg text-slate-300">
             Total Leads: <span className="text-cyan-400 font-bold">{pagination.total.toLocaleString()}</span>
           </div>
         </div>
@@ -492,7 +538,85 @@ export default function SalesCRM() {
         </div>
       )}
 
-      {/* Sales Pitch, David Profile & Flyer Collateral Modal */}
+      {/* Modal 1: Digital Business Card */}
+      {showCardModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+          <div className="bg-slate-900 border border-cyan-500/50 rounded-2xl w-full max-w-md shadow-2xl overflow-hidden relative">
+            <div className="h-24 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-700 relative">
+              <button
+                onClick={() => setShowCardModal(false)}
+                className="absolute top-3 right-3 p-1 text-white/80 hover:text-white bg-black/20 hover:bg-black/40 rounded-full transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="px-6 pb-6 pt-0 relative -mt-12 text-center">
+              <img
+                src="/david.png"
+                alt="David"
+                className="w-24 h-24 rounded-full border-4 border-slate-900 object-cover mx-auto shadow-xl"
+              />
+              <h3 className="text-xl font-bold text-white mt-3">David</h3>
+              <p className="text-xs text-cyan-400 font-semibold">Campaign Director • Better Local Dealz</p>
+              <p className="text-[11px] text-slate-400 mt-1">10,000 Door Hanger Residential Distributions</p>
+
+              {/* Direct Contact Cards */}
+              <div className="mt-5 space-y-2.5 text-left text-xs">
+                <a
+                  href="tel:7024259299"
+                  className="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-cyan-500 transition group"
+                >
+                  <div className="flex items-center gap-3">
+                    <Phone className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition" />
+                    <div>
+                      <p className="text-[10px] text-slate-500 uppercase font-semibold">Direct Line</p>
+                      <p className="text-white font-mono font-bold">(702) 425-9299</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] bg-cyan-950 text-cyan-300 font-bold px-2 py-1 rounded">Call / Text</span>
+                </a>
+
+                <a
+                  href="mailto:david@bldealz.com"
+                  className="flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-cyan-500 transition group"
+                >
+                  <div className="flex items-center gap-3">
+                    <Mail className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition" />
+                    <div>
+                      <p className="text-[10px] text-slate-500 uppercase font-semibold">Direct Email</p>
+                      <p className="text-white font-bold">david@bldealz.com</p>
+                    </div>
+                  </div>
+                  <span className="text-[10px] bg-cyan-950 text-cyan-300 font-bold px-2 py-1 rounded">Send Mail</span>
+                </a>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="mt-5 grid grid-cols-2 gap-2.5">
+                <a
+                  href="https://calendly.com/david-bldealz/demo"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-1.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2.5 px-3 rounded-xl text-xs transition shadow"
+                >
+                  <Calendar className="w-3.5 h-3.5" /> Book Demo
+                </a>
+                <a
+                  href="https://zoom.us/join"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-3 rounded-xl text-xs transition shadow"
+                >
+                  <Video className="w-3.5 h-3.5" /> Join Zoom
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal 2: Sales Pitch, Scanned Flyer Samples & Direct Stripe Checkout */}
       {showPitchModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
@@ -501,7 +625,7 @@ export default function SalesCRM() {
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/60">
               <div className="flex items-center gap-3">
                 <img src="/BLD.png" alt="BLD" className="h-8 w-auto object-contain" />
-                <h2 className="text-base font-bold text-white">Better Local Dealz • Outreach Kit & Collateral</h2>
+                <h2 className="text-base font-bold text-white">Better Local Dealz • Outreach Kit & Direct Checkout</h2>
               </div>
               <button
                 onClick={() => setShowPitchModal(false)}
@@ -514,7 +638,7 @@ export default function SalesCRM() {
             {/* Modal Body */}
             <div className="p-6 overflow-y-auto space-y-6">
               
-              {/* David Profile & Direct Booking Action */}
+              {/* David Card Banner with Demo Link & Phone */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-950/70 p-4 rounded-xl border border-slate-800">
                 <div className="flex items-center gap-3.5">
                   <img
@@ -523,19 +647,19 @@ export default function SalesCRM() {
                     className="w-14 h-14 rounded-full border-2 border-cyan-400 object-cover shadow-lg shrink-0"
                   />
                   <div>
-                    <h4 className="text-sm font-bold text-white">David • Campaign Director</h4>
-                    <p className="text-xs text-cyan-400 font-medium">Better Local Dealz Henderson</p>
+                    <h4 className="text-sm font-bold text-white">David • (702) 425-9299</h4>
+                    <p className="text-xs text-cyan-400 font-medium">david@bldealz.com</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2 w-full sm:w-auto">
                   <a
-                    href="https://calendly.com/david-bldealz/30min"
+                    href="https://calendly.com/david-bldealz/demo"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex-1 sm:flex-none flex items-center justify-center gap-1.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2 px-3.5 rounded-lg transition text-xs shadow"
                   >
-                    <Calendar className="w-3.5 h-3.5" /> Book Discovery Call
+                    <Calendar className="w-3.5 h-3.5" /> Book Demo (Calendly)
                   </a>
                   <a
                     href="https://zoom.us/join"
@@ -548,24 +672,26 @@ export default function SalesCRM() {
                 </div>
               </div>
 
-              {/* Outreach Script Section */}
+              {/* Pitch Script Section */}
               <div className="space-y-2.5">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
                   <FileText className="w-4 h-4" /> Phone Outreach Script
                 </h3>
                 <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800 text-xs text-slate-300 space-y-2 leading-relaxed">
-                  <p><strong className="text-amber-300">Hook:</strong> &quot;Hi [Owner], David here with Better Local Dealz. We&apos;re currently locking in category spots for our 10,000-home door-hanger drop hitting Henderson neighborhoods next month.&quot;</p>
-                  <p><strong className="text-amber-300">Exclusivity:</strong> &quot;We only feature 1 business per category so you won&apos;t share space with any competitors. Our $199 standard ad spot covers full design, printing, and front-door delivery.&quot;</p>
-                  <p><strong className="text-amber-300">Call to Action:</strong> &quot;Can I email over the sample layout or do a 3-minute Zoom to lock in your industry slot before it fills?&quot;</p>
+                  <p><strong className="text-amber-300">Hook:</strong> &quot;Hi [Owner], David here with Better Local Dealz. We&apos;re locking in category spots for our 10,000-home door-hanger drop hitting Henderson next month.&quot;</p>
+                  <p><strong className="text-amber-300">Exclusivity:</strong> &quot;We only feature 1 business per category so you won&apos;t share space with any competitors. Full design, printing, and front-door delivery is covered.&quot;</p>
+                  <p><strong className="text-amber-300">Call to Action:</strong> &quot;Can I email over the sample layout or do a quick 3-minute demo to lock in your industry slot before it fills?&quot;</p>
                 </div>
               </div>
 
-              {/* Scanned Image Viewer */}
+              {/* Scanned Image Viewer & Direct Stripe Payment Trigger */}
               <div className="space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
-                    <ImageIcon className="w-4 h-4" /> Scanned Flyer Samples
+                    <ImageIcon className="w-4 h-4" /> Scanned Samples & Instant Checkout
                   </h3>
+                  
+                  {/* Sample Tabs */}
                   <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 overflow-x-auto">
                     {FLYER_SAMPLES.map((sample) => (
                       <button
@@ -583,16 +709,28 @@ export default function SalesCRM() {
                   </div>
                 </div>
 
-                {/* Scanned Photo Display */}
-                <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col items-center justify-center min-h-[400px]">
+                {/* Scanned Sample Display + Buy Button */}
+                <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col items-center justify-center min-h-[420px]">
                   <img
                     src={`/${activeSample.file}`}
                     alt={activeSample.label}
-                    className="max-h-[500px] w-auto object-contain rounded-lg shadow-2xl border border-slate-800"
+                    className="max-h-[480px] w-auto object-contain rounded-lg shadow-2xl border border-slate-800"
                   />
-                  <span className="text-[11px] text-slate-500 mt-2.5">
-                    Displaying: <code className="text-cyan-400 font-mono">public/{activeSample.file}</code>
-                  </span>
+
+                  {/* Direct Stripe Checkout Button for the Selected Tier */}
+                  {activeSample.stripeUrl && (
+                    <div className="mt-4 flex flex-col sm:flex-row items-center gap-3">
+                      <a
+                        href={activeSample.stripeUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs px-6 py-2.5 rounded-xl shadow-lg transition"
+                      >
+                        <CreditCard className="w-4 h-4" /> {activeSample.btnText}
+                      </a>
+                      <span className="text-[11px] text-slate-400">Guarantees slot lock for 10,000 homes</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
