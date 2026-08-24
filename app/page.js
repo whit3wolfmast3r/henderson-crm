@@ -1,8 +1,10 @@
 'use client';
 import { useState, useEffect, useRef, useCallback } from 'react';
+import Link from 'next/link';
 import { 
   Search, Globe, Phone, Star, MapPin, Building2, 
-  UserCheck, ExternalLink, Check, Copy, FileText, SearchCheck, Loader2
+  UserCheck, ExternalLink, Check, Copy, FileText, SearchCheck, 
+  Loader2, Sparkles, X, Image as ImageIcon, Calendar, Video
 } from 'lucide-react';
 
 const DISPOSITIONS = [
@@ -26,6 +28,14 @@ const DISPOSITION_COLORS = {
   'Do Not Call': 'bg-red-950 text-red-500 border-red-900',
 };
 
+const FLYER_SAMPLES = [
+  { id: 'standard', label: 'Standard ($199)', file: 'standard' },
+  { id: 'large', label: 'Large Spotlight', file: 'large' },
+  { id: 'jumbo', label: 'Jumbo Half-Side', file: 'jumbo' },
+  { id: 'front', label: 'Front Cover', file: 'front' },
+  { id: 'custom', label: 'Full Custom', file: 'custom' }
+];
+
 export default function SalesCRM() {
   const [businesses, setBusinesses] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -37,6 +47,10 @@ export default function SalesCRM() {
   const [loading, setLoading] = useState(true);
   const [savedStatus, setSavedStatus] = useState({});
   const [copiedId, setCopiedId] = useState(null);
+
+  // Sales Deck Modal State
+  const [showPitchModal, setShowPitchModal] = useState(false);
+  const [activeSample, setActiveSample] = useState(FLYER_SAMPLES[0]);
 
   const saveTimers = useRef({});
 
@@ -158,6 +172,23 @@ export default function SalesCRM() {
           <p className="text-slate-400 text-xs mt-1">10,000 Door Hanger Campaign • Instant Officer Registries • Auto-Saving CRM</p>
         </div>
         <div className="flex items-center gap-3">
+          {/* Quick Pop-up Modal Button */}
+          <button
+            onClick={() => setShowPitchModal(true)}
+            className="flex items-center gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold px-4 py-2.5 rounded-lg shadow-lg transition"
+          >
+            <Sparkles className="w-4 h-4 text-amber-300" /> Pitch & Samples
+          </button>
+
+          {/* Full Page Link for 2nd Screen Tab */}
+          <Link
+            href="/deck"
+            target="_blank"
+            className="hidden sm:flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold px-3 py-2.5 rounded-lg border border-slate-700 transition"
+          >
+            <ExternalLink className="w-3.5 h-3.5 text-cyan-400" /> Open Deck Page
+          </Link>
+
           <div className="text-xs bg-slate-900 border border-slate-800 px-3.5 py-2 rounded-lg text-slate-300">
             Total Leads: <span className="text-cyan-400 font-bold">{pagination.total.toLocaleString()}</span>
           </div>
@@ -289,7 +320,7 @@ export default function SalesCRM() {
                   <div className="mb-3 bg-slate-950/80 p-2 rounded-lg border border-slate-800">
                     {targetPhone ? (
                       <div className="flex items-center justify-between bg-slate-900 border border-slate-700/80 rounded-lg overflow-hidden group hover:border-cyan-500 transition-colors">
-                        {/* Tap to Call via RingCentral / Native Dialer */}
+                        {/* Dial via RingCentral / Mobile Dialer */}
                         <a
                           href={`tel:${dialNumber}`}
                           title="Click to dial with RingCentral / Phone"
@@ -456,6 +487,109 @@ export default function SalesCRM() {
           </button>
         </div>
       )}
+
+      {/* Sales Pitch & Flyer Collateral Modal */}
+      {showPitchModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/60">
+              <div className="flex items-center gap-2.5">
+                <Sparkles className="w-5 h-5 text-cyan-400" />
+                <h2 className="text-base font-bold text-white">Better Local Dealz • Sales Script & Scanned Collateral</h2>
+              </div>
+              <button
+                onClick={() => setShowPitchModal(false)}
+                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 overflow-y-auto space-y-6">
+              
+              {/* Quick Links Banner */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-950/70 p-4 rounded-xl border border-slate-800">
+                <a
+                  href="https://calendly.com/david-bldealz/30min"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-2.5 px-4 rounded-lg transition text-xs shadow"
+                >
+                  <Calendar className="w-4 h-4" /> Book Call on Calendly
+                </a>
+                <a
+                  href="https://zoom.us/join"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-2.5 px-4 rounded-lg transition text-xs shadow"
+                >
+                  <Video className="w-4 h-4" /> Launch Zoom
+                </a>
+              </div>
+
+              {/* Pitch Script Section */}
+              <div className="space-y-2.5">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
+                  <FileText className="w-4 h-4" /> Phone Outreach Script
+                </h3>
+                <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800 text-xs text-slate-300 space-y-2 leading-relaxed">
+                  <p><strong className="text-amber-300">Hook:</strong> &quot;Hi [Owner], David here with Better Local Dealz. We&apos;re currently locking in category spots for our 10,000-home door-hanger drop hitting Henderson neighborhoods next month.&quot;</p>
+                  <p><strong className="text-amber-300">Exclusivity:</strong> &quot;We only feature 1 business per category so you won&apos;t share space with any competitors. Our $199 standard ad spot covers full design, printing, and front-door delivery.&quot;</p>
+                  <p><strong className="text-amber-300">Call to Action:</strong> &quot;Can I email over the sample layout or do a 3-minute Zoom to lock in your industry slot before it fills?&quot;</p>
+                </div>
+              </div>
+
+              {/* Scanned Image Viewer */}
+              <div className="space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
+                    <ImageIcon className="w-4 h-4" /> Scanned Flyer Samples
+                  </h3>
+                  {/* Image Tab Buttons */}
+                  <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 overflow-x-auto">
+                    {FLYER_SAMPLES.map((sample) => (
+                      <button
+                        key={sample.id}
+                        onClick={() => setActiveSample(sample)}
+                        className={`px-3 py-1 rounded text-xs font-semibold whitespace-nowrap transition ${
+                          activeSample.id === sample.id
+                            ? 'bg-cyan-500 text-slate-950 font-bold'
+                            : 'text-slate-400 hover:text-white'
+                        }`}
+                      >
+                        {sample.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Scanned Photo Display */}
+                <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col items-center justify-center min-h-[400px]">
+                  <img
+                    src={`/${activeSample.file}.png`}
+                    alt={activeSample.label}
+                    className="max-h-[500px] w-auto object-contain rounded-lg shadow-2xl border border-slate-800"
+                    onError={(e) => {
+                      if (!e.target.dataset.tried) {
+                        e.target.dataset.tried = 'true';
+                        e.target.src = `/${activeSample.file}.jpg`;
+                      }
+                    }}
+                  />
+                  <span className="text-[11px] text-slate-500 mt-2.5">
+                    Displaying: <code className="text-cyan-400 font-mono">public/{activeSample.file}.png</code>
+                  </span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
