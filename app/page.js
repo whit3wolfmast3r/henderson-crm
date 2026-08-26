@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { 
   Search, Globe, Phone, Star, MapPin, Mail,
   UserCheck, ExternalLink, Check, Copy, FileText, SearchCheck, 
-  Loader2, Sparkles, X, Image as ImageIcon, Calendar, Video, CreditCard, IdCard
+  Loader2, Sparkles, X, Image as ImageIcon, Calendar, Video, CreditCard, IdCard, PhoneCall
 } from 'lucide-react';
 
 const DISPOSITIONS = [
@@ -173,6 +173,7 @@ export default function SalesCRM() {
     if (!name) return '';
     return name
       .replace(/\b(LLC|L\.L\.C\.|INC|INC\.|CORP|CORP\.|CO|CO\.|LTD|LTD\.|PLLC|LP|LLP)\b/gi, '')
+      .replace(/,/g, ' ')
       .replace(/[^\w\s]/gi, ' ')
       .replace(/\s+/g, ' ')
       .trim();
@@ -189,7 +190,7 @@ export default function SalesCRM() {
 
   return (
     <div className="max-w-[1600px] mx-auto px-4 py-6">
-      {/* Header with BLD Logo & Action Bar */}
+      {/* Header */}
       <header className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-800 pb-5 gap-4">
         <div className="flex items-center gap-4">
           <img 
@@ -319,8 +320,7 @@ export default function SalesCRM() {
             const targetPhone = biz.phone_number || biz.municipal_phone || '';
             const dialNumber = targetPhone.replace(/\D/g, '');
             const statusState = savedStatus[biz.id];
-            
-            // Clean business name for SOS & registry lookups
+            const isCalled = biz.disposition && biz.disposition !== 'Not Contacted';
             const lookupQuery = cleanEntityName(biz.entity_name || biz.dba || '');
 
             return (
@@ -394,26 +394,45 @@ export default function SalesCRM() {
                     )}
                   </div>
 
-                  {/* Instant 1-Click Officer Registries (Direct Anchor Links) */}
+                  {/* OpenCorp Registry & Fast Contact Toggle (Called: YES / NO) */}
                   <div className="grid grid-cols-2 gap-2 mb-3">
+                    {/* OpenCorp Nevada Registry Lookup */}
                     <a
                       href={`https://opencorporates.com/companies?jurisdiction_code=us_nv&q=${encodeURIComponent(lookupQuery)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       title="Direct 1-click lookup on OpenCorporates Nevada"
-                      className="inline-flex items-center justify-center gap-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs py-2 px-2 rounded-lg transition shadow text-center cursor-pointer select-none"
+                      className="inline-flex items-center justify-center gap-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs py-2 px-2 rounded-lg transition shadow text-center cursor-pointer select-none"
                     >
                       <SearchCheck className="w-3.5 h-3.5" /> OpenCorp NV
                     </a>
-                    <a
-                      href={`https://www.bizapedia.com/search.aspx?type=companies&searchTerm=${encodeURIComponent(lookupQuery)}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      title="Direct 1-click lookup on Bizapedia Nevada"
-                      className="inline-flex items-center justify-center gap-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-300 text-xs py-2 px-2 rounded-lg transition font-medium text-center cursor-pointer select-none"
+
+                    {/* Instant Called Status Toggle */}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const nextDisp = isCalled ? 'Not Contacted' : 'Left Voicemail';
+                        updateBusinessField(biz.id, 'disposition', nextDisp, true);
+                      }}
+                      title="Click to toggle called status"
+                      className={`inline-flex items-center justify-center gap-1.5 font-bold text-xs py-2 px-2 rounded-lg transition shadow text-center cursor-pointer select-none border ${
+                        isCalled
+                          ? 'bg-emerald-950/90 text-emerald-300 border-emerald-600 hover:bg-emerald-900/80'
+                          : 'bg-slate-900 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'
+                      }`}
                     >
-                      <ExternalLink className="w-3.5 h-3.5" /> Bizapedia NV
-                    </a>
+                      {isCalled ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-emerald-400 stroke-[3]" />
+                          <span>Called: <strong className="text-emerald-300">YES</strong></span>
+                        </>
+                      ) : (
+                        <>
+                          <PhoneCall className="w-3.5 h-3.5 text-slate-500" />
+                          <span>Called: <strong className="text-slate-400">NO</strong></span>
+                        </>
+                      )}
+                    </button>
                   </div>
 
                   {/* Decision Maker & Disposition Fields */}
@@ -609,7 +628,7 @@ export default function SalesCRM() {
         </div>
       )}
 
-      {/* Modal 2: Sales Pitch, Samples & Direct Stripe Checkout */}
+      {/* Modal 2: Sales Pitch & Collateral */}
       {showPitchModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
@@ -668,12 +687,12 @@ export default function SalesCRM() {
               {/* Pitch Script Section */}
               <div className="space-y-2.5">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
-                  <FileText className="w-4 h-4" /> Phone Outreach Script
+                  <FileText className="w-4 h-4" /> Phone Outreach Script (BOGO Special)
                 </h3>
                 <div className="bg-slate-950/80 p-4 rounded-xl border border-slate-800 text-xs text-slate-300 space-y-2 leading-relaxed">
-                  <p><strong className="text-amber-300">Hook:</strong> &quot;Hi [Owner], David here with Better Local Dealz. We&apos;re locking in category spots for our 10,000-home door-hanger drop hitting Henderson next month.&quot;</p>
-                  <p><strong className="text-amber-300">Exclusivity:</strong> &quot;We only feature 1 business per category so you won&apos;t share space with any competitors. Full design, printing, and front-door delivery is covered.&quot;</p>
-                  <p><strong className="text-amber-300">Call to Action:</strong> &quot;Can I email over the sample layout or do a quick 3-minute demo to lock in your industry slot before it fills?&quot;</p>
+                  <p><strong className="text-amber-300">Hook:</strong> &quot;Hi [Owner], David here with Better Local Dealz. We&apos;re currently locking in category spots for our Henderson door-hanger campaign and just released our BOGO double-drop promo.&quot;</p>
+                  <p><strong className="text-amber-300">Value & Exclusivity:</strong> &quot;When you lock in your 10,000-home spot for $199, we include a second 10,000-home run free—putting you on 20,000 doors for under a penny per home with zero competitor ads.&quot;</p>
+                  <p><strong className="text-amber-300">Call to Action:</strong> &quot;Can I email or text over the sample layout or do a 3-minute demo to lock in your industry slot before it fills?&quot;</p>
                 </div>
               </div>
 
