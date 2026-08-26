@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { 
   Search, Globe, Phone, Star, MapPin, Mail,
   UserCheck, ExternalLink, Check, Copy, FileText, SearchCheck, 
-  Loader2, Sparkles, X, Image as ImageIcon, Calendar, Video, CreditCard, IdCard, PhoneCall
+  Loader2, Sparkles, X, Image as ImageIcon, Calendar, Video, CreditCard, IdCard
 } from 'lucide-react';
 
 const DISPOSITIONS = [
@@ -320,7 +320,6 @@ export default function SalesCRM() {
             const targetPhone = biz.phone_number || biz.municipal_phone || '';
             const dialNumber = targetPhone.replace(/\D/g, '');
             const statusState = savedStatus[biz.id];
-            const isCalled = biz.disposition && biz.disposition !== 'Not Contacted';
             const lookupQuery = cleanEntityName(biz.entity_name || biz.dba || '');
 
             return (
@@ -394,45 +393,27 @@ export default function SalesCRM() {
                     )}
                   </div>
 
-                  {/* OpenCorp Registry & Fast Contact Toggle (Called: YES / NO) */}
+                  {/* OpenCorp Registry & Direct Calendly Demo Booking */}
                   <div className="grid grid-cols-2 gap-2 mb-3">
-                    {/* OpenCorp Nevada Registry Lookup */}
                     <a
                       href={`https://opencorporates.com/companies?jurisdiction_code=us_nv&q=${encodeURIComponent(lookupQuery)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       title="Direct 1-click lookup on OpenCorporates Nevada"
-                      className="inline-flex items-center justify-center gap-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs py-2 px-2 rounded-lg transition shadow text-center cursor-pointer select-none"
+                      className="inline-flex items-center justify-center gap-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs py-2 px-2 rounded-lg transition shadow text-center cursor-pointer select-none"
                     >
                       <SearchCheck className="w-3.5 h-3.5" /> OpenCorp NV
                     </a>
 
-                    {/* Instant Called Status Toggle */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const nextDisp = isCalled ? 'Not Contacted' : 'Left Voicemail';
-                        updateBusinessField(biz.id, 'disposition', nextDisp, true);
-                      }}
-                      title="Click to toggle called status"
-                      className={`inline-flex items-center justify-center gap-1.5 font-bold text-xs py-2 px-2 rounded-lg transition shadow text-center cursor-pointer select-none border ${
-                        isCalled
-                          ? 'bg-emerald-950/90 text-emerald-300 border-emerald-600 hover:bg-emerald-900/80'
-                          : 'bg-slate-900 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200'
-                      }`}
+                    <a
+                      href="https://calendly.com/david-bldealz/demo"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Book Demo on Calendly"
+                      className="inline-flex items-center justify-center gap-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs py-2 px-2 rounded-lg transition shadow text-center cursor-pointer select-none"
                     >
-                      {isCalled ? (
-                        <>
-                          <Check className="w-3.5 h-3.5 text-emerald-400 stroke-[3]" />
-                          <span>Called: <strong className="text-emerald-300">YES</strong></span>
-                        </>
-                      ) : (
-                        <>
-                          <PhoneCall className="w-3.5 h-3.5 text-slate-500" />
-                          <span>Called: <strong className="text-slate-400">NO</strong></span>
-                        </>
-                      )}
-                    </button>
+                      <Calendar className="w-3.5 h-3.5" /> Book Demo
+                    </a>
                   </div>
 
                   {/* Decision Maker & Disposition Fields */}
