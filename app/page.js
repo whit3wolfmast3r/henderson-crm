@@ -178,16 +178,6 @@ export default function SalesCRM() {
       .trim();
   };
 
-  const openOpenCorporates = (entityName) => {
-    const clean = cleanEntityName(entityName);
-    window.open(`https://opencorporates.com/companies/us_nv?q=${encodeURIComponent(clean)}`, '_blank');
-  };
-
-  const openBizapedia = (entityName) => {
-    const clean = cleanEntityName(entityName);
-    window.open(`https://www.bizapedia.com/search.aspx?company=${encodeURIComponent(clean)}`, '_blank');
-  };
-
   const copyPhone = (e, id, phone) => {
     e.preventDefault();
     e.stopPropagation();
@@ -199,7 +189,7 @@ export default function SalesCRM() {
 
   return (
     <div className="max-w-[1600px] mx-auto px-4 py-6">
-      {/* Header with Mobile-Optimized Action Bar */}
+      {/* Header with BLD Logo & Action Bar */}
       <header className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between border-b border-slate-800 pb-5 gap-4">
         <div className="flex items-center gap-4">
           <img 
@@ -215,9 +205,8 @@ export default function SalesCRM() {
           </div>
         </div>
 
-        {/* Action Buttons: 2x2 Grid on Mobile, Flex on Desktop */}
+        {/* Action Buttons */}
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
-          {/* Digital Business Card */}
           <button
             onClick={() => setShowCardModal(true)}
             className="flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 text-xs font-bold px-3 py-2.5 rounded-lg shadow transition"
@@ -225,7 +214,6 @@ export default function SalesCRM() {
             <IdCard className="w-4 h-4 text-cyan-400" /> David&apos;s Card
           </button>
 
-          {/* Quick Pitch & Samples Modal */}
           <button
             onClick={() => setShowPitchModal(true)}
             className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold px-3 py-2.5 rounded-lg shadow transition"
@@ -233,7 +221,6 @@ export default function SalesCRM() {
             <Sparkles className="w-4 h-4 text-amber-300" /> Pitch & Samples
           </button>
 
-          {/* Full Deck Page (Always Visible on Mobile) */}
           <Link
             href="/deck"
             target="_blank"
@@ -242,7 +229,6 @@ export default function SalesCRM() {
             <ExternalLink className="w-3.5 h-3.5 text-cyan-400" /> Deck & Pricing
           </Link>
 
-          {/* Total Leads Badge */}
           <div className="flex items-center justify-center text-xs bg-slate-900 border border-slate-800 px-3 py-2.5 rounded-lg text-slate-300">
             Leads: <span className="text-cyan-400 font-bold ml-1">{pagination.total.toLocaleString()}</span>
           </div>
@@ -333,6 +319,9 @@ export default function SalesCRM() {
             const targetPhone = biz.phone_number || biz.municipal_phone || '';
             const dialNumber = targetPhone.replace(/\D/g, '');
             const statusState = savedStatus[biz.id];
+            
+            // Clean business name for SOS & registry lookups
+            const lookupQuery = cleanEntityName(biz.entity_name || biz.dba || '');
 
             return (
               <div
@@ -405,22 +394,26 @@ export default function SalesCRM() {
                     )}
                   </div>
 
-                  {/* Instant 1-Click Officer Registries */}
+                  {/* Instant 1-Click Officer Registries (Direct Anchor Links) */}
                   <div className="grid grid-cols-2 gap-2 mb-3">
-                    <button
-                      onClick={() => openOpenCorporates(biz.entity_name)}
+                    <a
+                      href={`https://opencorporates.com/companies?jurisdiction_code=us_nv&q=${encodeURIComponent(lookupQuery)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       title="Direct 1-click lookup on OpenCorporates Nevada"
-                      className="inline-flex items-center justify-center gap-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs py-1.5 px-2 rounded-lg transition shadow"
+                      className="inline-flex items-center justify-center gap-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs py-2 px-2 rounded-lg transition shadow text-center cursor-pointer select-none"
                     >
                       <SearchCheck className="w-3.5 h-3.5" /> OpenCorp NV
-                    </button>
-                    <button
-                      onClick={() => openBizapedia(biz.entity_name)}
+                    </a>
+                    <a
+                      href={`https://www.bizapedia.com/search.aspx?type=companies&searchTerm=${encodeURIComponent(lookupQuery)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                       title="Direct 1-click lookup on Bizapedia Nevada"
-                      className="inline-flex items-center justify-center gap-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-300 text-xs py-1.5 px-2 rounded-lg transition font-medium"
+                      className="inline-flex items-center justify-center gap-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-300 text-xs py-2 px-2 rounded-lg transition font-medium text-center cursor-pointer select-none"
                     >
                       <ExternalLink className="w-3.5 h-3.5" /> Bizapedia NV
-                    </button>
+                    </a>
                   </div>
 
                   {/* Decision Maker & Disposition Fields */}
