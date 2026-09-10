@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { 
   Search, Globe, Phone, Star, MapPin, Mail,
   UserCheck, ExternalLink, Check, Copy, FileText, SearchCheck, 
-  Loader2, Sparkles, X, Image as ImageIcon, Calendar, Video, CreditCard, IdCard
+  Loader2, Sparkles, X, Image as ImageIcon, Calendar, Video, CreditCard, IdCard,
+  Plus, MessageSquare, User
 } from 'lucide-react';
 
 const DISPOSITIONS = [
@@ -12,6 +13,7 @@ const DISPOSITIONS = [
   'Not Contacted',
   'Interested',
   'Callback',
+  'Text Later',
   'Left Voicemail',
   'Gatekeeper',
   'Not Interested',
@@ -22,6 +24,7 @@ const DISPOSITION_COLORS = {
   'Not Contacted': 'bg-slate-800 text-slate-300 border-slate-700',
   'Interested': 'bg-emerald-950/80 text-emerald-400 border-emerald-700',
   'Callback': 'bg-amber-950/80 text-amber-300 border-amber-700',
+  'Text Later': 'bg-sky-950/80 text-sky-300 border-sky-700',
   'Left Voicemail': 'bg-sky-950/80 text-sky-300 border-sky-700',
   'Gatekeeper': 'bg-purple-950/80 text-purple-300 border-purple-700',
   'Not Interested': 'bg-rose-950/80 text-rose-400 border-rose-800',
@@ -71,11 +74,23 @@ const FLYER_SAMPLES = [
   }
 ];
 
+const getAssigneeStyle = (assignedTo) => {
+  switch (assignedTo?.toLowerCase()) {
+    case 'david':
+      return 'border-sky-500 ring-1 ring-sky-500/50 shadow-lg shadow-sky-950/40';
+    case 'zach':
+      return 'border-purple-500 ring-1 ring-purple-500/50 shadow-lg shadow-purple-950/40';
+    default:
+      return 'border-slate-800 shadow-sm';
+  }
+};
+
 export default function SalesCRM() {
   const [businesses, setBusinesses] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCat, setSelectedCat] = useState('All');
   const [selectedDisp, setSelectedDisp] = useState('All');
+  const [selectedAssignee, setSelectedAssignee] = useState('All');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState({ total: 0, totalPages: 1 });
@@ -86,6 +101,7 @@ export default function SalesCRM() {
   // Modals
   const [showPitchModal, setShowPitchModal] = useState(false);
   const [showCardModal, setShowCardModal] = useState(false);
+  const [showAddModal, setShowAddModal] = useState(false);
   const [activeSample, setActiveSample] = useState(FLYER_SAMPLES[0]);
 
   const saveTimers = useRef({});
@@ -93,7 +109,9 @@ export default function SalesCRM() {
   const fetchBusinesses = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/businesses?q=${encodeURIComponent(search)}&category=${encodeURIComponent(selectedCat)}&disposition=${encodeURIComponent(selectedDisp)}&page=${page}`);
+      const res = await fetch(
+        `/api/businesses?q=${encodeURIComponent(search)}&category=${encodeURIComponent(selectedCat)}&disposition=${encodeURIComponent(selectedDisp)}&assigned_to=${encodeURIComponent(selectedAssignee)}&page=${page}`
+      );
       const data = await res.json();
       setBusinesses(data.businesses || []);
       setCategories(data.categories || []);
@@ -107,7 +125,7 @@ export default function SalesCRM() {
 
   useEffect(() => {
     fetchBusinesses();
-  }, [selectedCat, selectedDisp, page]);
+  }, [selectedCat, selectedDisp, selectedAssignee, page]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -125,7 +143,9 @@ export default function SalesCRM() {
           id: bizPayload.id,
           notes: bizPayload.notes,
           disposition: bizPayload.disposition,
-          decision_maker: bizPayload.decision_maker
+          decision_maker: bizPayload.decision_maker,
+          assigned_to: bizPayload.assigned_to || 'unassigned',
+          last_called_at: bizPayload.last_called_at || null
         })
       });
       setSavedStatus(prev => ({ ...prev, [bizPayload.id]: 'saved' }));
@@ -156,7 +176,11 @@ export default function SalesCRM() {
       let targetBiz = null;
       const updated = prev.map(b => {
         if (b.id === id) {
-          targetBiz = { ...b, [field]: value };
+          targetBiz = { 
+            ...b, 
+            [field]: value,
+            ...(field === 'disposition' ? { last_called_at: new Date().toISOString() } : {})
+          };
           return targetBiz;
         }
         return b;
@@ -167,6 +191,11 @@ export default function SalesCRM() {
       }
       return updated;
     });
+  };
+
+  const toggleAssignee = (id, currentAssignee, target) => {
+    const next = currentAssignee === target ? 'unassigned' : target;
+    updateBusinessField(id, 'assigned_to', next, true);
   };
 
   const cleanEntityName = (name) => {
@@ -188,6 +217,11 @@ export default function SalesCRM() {
     setTimeout(() => setCopiedId(null), 1500);
   };
 
+  const handleBusinessCreated = (newBiz) => {
+    setBusinesses(prev => [newBiz, ...prev]);
+    setPagination(prev => ({ ...prev, total: prev.total + 1 }));
+  };
+
   return (
     <div className="max-w-[1600px] mx-auto px-4 py-6">
       {/* Header */}
@@ -200,7 +234,7 @@ export default function SalesCRM() {
           />
           <div>
             <h1 className="text-xl font-bold tracking-tight text-white flex items-center gap-2">
-              Henderson Outreach CRM
+              David's Money
             </h1>
             <p className="text-slate-400 text-xs mt-0.5">10,000 Door Hanger Campaign • Instant Officer Registries • Auto-Saving Leads</p>
           </div>
@@ -208,6 +242,13 @@ export default function SalesCRM() {
 
         {/* Action Buttons */}
         <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2.5 rounded-lg shadow transition"
+          >
+            <Plus className="w-4 h-4" /> Add Business
+          </button>
+
           <button
             onClick={() => setShowCardModal(true)}
             className="flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 text-xs font-bold px-3 py-2.5 rounded-lg shadow transition"
@@ -254,6 +295,30 @@ export default function SalesCRM() {
             Search
           </button>
         </form>
+
+        {/* Assigned Rep Filter */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
+          <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider shrink-0 mr-1 flex items-center gap-1">
+            <User className="w-3 h-3" /> Assigned:
+          </span>
+          {['All', 'david', 'zach', 'unassigned'].map((rep) => (
+            <button
+              key={rep}
+              onClick={() => { setSelectedAssignee(rep); setPage(1); }}
+              className={`px-3 py-1 rounded-lg text-xs font-medium whitespace-nowrap transition border ${
+                selectedAssignee === rep
+                  ? rep === 'david'
+                    ? 'bg-sky-500 text-slate-950 font-bold border-sky-400'
+                    : rep === 'zach'
+                    ? 'bg-purple-500 text-white font-bold border-purple-400'
+                    : 'bg-cyan-500 text-slate-950 font-bold border-cyan-400'
+                  : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800'
+              }`}
+            >
+              {rep === 'all' ? 'All Leads' : rep.charAt(0).toUpperCase() + rep.slice(1)}
+            </button>
+          ))}
+        </div>
 
         {/* Dispositions Filter */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-thin">
@@ -325,24 +390,55 @@ export default function SalesCRM() {
             return (
               <div
                 key={biz.id}
-                className="bg-slate-900/90 border border-slate-800 hover:border-slate-700/80 rounded-xl p-5 flex flex-col justify-between transition-all shadow-md hover:shadow-cyan-950/20"
+                className={`bg-slate-900/90 rounded-xl p-5 flex flex-col justify-between transition-all shadow-md ${getAssigneeStyle(
+                  biz.assigned_to
+                )}`}
               >
                 <div>
-                  {/* Card Header */}
+                  {/* Card Header with David / Zach Segmented Toggle */}
                   <div className="flex items-start justify-between gap-2 mb-2">
-                    <div>
+                    <div className="flex-1 pr-2">
                       <h3 className="font-bold text-lg text-white line-clamp-1">{displayName}</h3>
                       {biz.entity_name !== biz.dba && biz.dba && (
                         <p className="text-xs text-slate-400 font-mono truncate">Legal: {biz.entity_name}</p>
                       )}
                     </div>
-                    {biz.rating > 0 && (
-                      <div className="flex items-center gap-1 bg-amber-400/10 text-amber-300 px-2 py-0.5 rounded text-xs font-semibold shrink-0">
-                        <Star className="w-3.5 h-3.5 fill-amber-400" />
-                        <span>{biz.rating.toFixed(1)}</span>
-                        <span className="text-slate-500">({biz.user_ratings_total})</span>
+
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {/* Segmented Assignee Toggle */}
+                      <div className="inline-flex bg-slate-950 p-0.5 rounded-lg border border-slate-800">
+                        <button
+                          type="button"
+                          onClick={() => toggleAssignee(biz.id, biz.assigned_to, 'david')}
+                          className={`px-2 py-0.5 text-[11px] font-semibold rounded transition ${
+                            biz.assigned_to?.toLowerCase() === 'david'
+                              ? 'bg-sky-600 text-white shadow'
+                              : 'text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          David
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => toggleAssignee(biz.id, biz.assigned_to, 'zach')}
+                          className={`px-2 py-0.5 text-[11px] font-semibold rounded transition ${
+                            biz.assigned_to?.toLowerCase() === 'zach'
+                              ? 'bg-purple-600 text-white shadow'
+                              : 'text-slate-400 hover:text-white'
+                          }`}
+                        >
+                          Zach
+                        </button>
                       </div>
-                    )}
+
+                      {biz.rating > 0 && (
+                        <div className="flex items-center gap-1 bg-amber-400/10 text-amber-300 px-2 py-0.5 rounded text-xs font-semibold shrink-0">
+                          <Star className="w-3.5 h-3.5 fill-amber-400" />
+                          <span>{biz.rating.toFixed(1)}</span>
+                          <span className="text-slate-500">({biz.user_ratings_total})</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Category & Address */}
@@ -358,7 +454,7 @@ export default function SalesCRM() {
                     </span>
                   </div>
 
-                  {/* Phone Display Bar with Click-To-Dial & Copy */}
+                  {/* Phone Display Bar with Click-To-Dial, 1-Click SMS, & Copy */}
                   <div className="mb-3 bg-slate-950/80 p-2 rounded-lg border border-slate-800">
                     {targetPhone ? (
                       <div className="flex items-center justify-between bg-slate-900 border border-slate-700/80 rounded-lg overflow-hidden group hover:border-cyan-500 transition-colors">
@@ -369,6 +465,15 @@ export default function SalesCRM() {
                         >
                           <Phone className="w-4 h-4 text-cyan-400 shrink-0 group-hover:scale-110 transition-transform" />
                           <span className="truncate tracking-wide">{targetPhone}</span>
+                        </a>
+
+                        {/* Direct SMS trigger */}
+                        <a
+                          href={`sms:${dialNumber}`}
+                          title="Open SMS App / Text Business"
+                          className="px-2.5 py-2 text-sky-400 hover:text-sky-300 border-l border-slate-700/80 hover:bg-slate-800 transition-colors shrink-0"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
                         </a>
 
                         <button
@@ -613,8 +718,6 @@ export default function SalesCRM() {
       {showPitchModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden">
-            
-            {/* Modal Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-slate-950/60">
               <div className="flex items-center gap-3">
                 <img src="/BLD.png" alt="BLD" className="h-8 w-auto object-contain" />
@@ -628,10 +731,7 @@ export default function SalesCRM() {
               </button>
             </div>
 
-            {/* Modal Body */}
             <div className="p-6 overflow-y-auto space-y-6">
-              
-              {/* David Banner */}
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-950/70 p-4 rounded-xl border border-slate-800">
                 <div className="flex items-center gap-3.5">
                   <img
@@ -665,7 +765,6 @@ export default function SalesCRM() {
                 </div>
               </div>
 
-              {/* Pitch Script Section */}
               <div className="space-y-2.5">
                 <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
                   <FileText className="w-4 h-4" /> Phone Outreach Script (BOGO Special)
@@ -677,14 +776,12 @@ export default function SalesCRM() {
                 </div>
               </div>
 
-              {/* Scanned Image Viewer & Direct Stripe Payment Trigger */}
               <div className="space-y-3">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <h3 className="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-1.5">
                     <ImageIcon className="w-4 h-4" /> Scanned Samples & Instant Checkout
                   </h3>
                   
-                  {/* Sample Tabs */}
                   <div className="flex items-center gap-1 bg-slate-950 p-1 rounded-lg border border-slate-800 overflow-x-auto">
                     {FLYER_SAMPLES.map((sample) => (
                       <button
@@ -702,7 +799,6 @@ export default function SalesCRM() {
                   </div>
                 </div>
 
-                {/* Scanned Sample Display + Buy Button */}
                 <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 flex flex-col items-center justify-center min-h-[420px]">
                   <img
                     src={`/${activeSample.file}`}
@@ -731,6 +827,228 @@ export default function SalesCRM() {
         </div>
       )}
 
+      {/* Modal 3: Add Business Modal */}
+      {showAddModal && (
+        <AddBusinessModal 
+          isOpen={showAddModal} 
+          onClose={() => setShowAddModal(false)} 
+          onCreated={handleBusinessCreated} 
+        />
+      )}
+
+    </div>
+  );
+}
+
+// Modal Component for Inserting Off-Platform Leads
+function AddBusinessModal({ isOpen, onClose, onCreated }) {
+  const [formData, setFormData] = useState({
+    entity_name: '',
+    dba: '',
+    phone_number: '',
+    address: '',
+    city: 'Henderson',
+    state: 'NV',
+    zip_code: '',
+    assigned_to: 'david',
+    decision_maker: '',
+    notes: '',
+  });
+  const [loading, setLoading] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!formData.entity_name.trim()) return;
+
+    setLoading(true);
+    const newRecord = {
+      id: `manual_${Date.now()}`,
+      entity_name: formData.entity_name.trim(),
+      dba: formData.dba.trim() || formData.entity_name.trim(),
+      phone_number: formData.phone_number.trim(),
+      address: formData.address.trim(),
+      formatted_address: formData.address.trim(),
+      city: formData.city.trim(),
+      state: formData.state.trim().toUpperCase(),
+      zip_code: formData.zip_code.trim(),
+      assigned_to: formData.assigned_to,
+      decision_maker: formData.decision_maker.trim(),
+      disposition: 'Not Contacted',
+      notes: formData.notes.trim(),
+      updated_at: new Date().toISOString(),
+    };
+
+    try {
+      const res = await fetch('/api/crm', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'create', ...newRecord })
+      });
+
+      if (res.ok) {
+        onCreated(newRecord);
+        onClose();
+      } else {
+        // Fallback optimistic append
+        onCreated(newRecord);
+        onClose();
+      }
+    } catch (err) {
+      console.error(err);
+      onCreated(newRecord);
+      onClose();
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+      <div className="w-full max-w-lg bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-2xl">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-base font-bold text-white flex items-center gap-2">
+            <Plus className="w-4 h-4 text-emerald-400" /> Add Off-Platform Business
+          </h2>
+          <button onClick={onClose} className="text-slate-400 hover:text-white">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-3">
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-400 mb-1">Company / Entity Name *</label>
+            <input
+              required
+              type="text"
+              value={formData.entity_name}
+              onChange={(e) => setFormData({ ...formData, entity_name: e.target.value })}
+              className="w-full p-2 bg-slate-950 border border-slate-800 rounded text-xs text-white focus:outline-none focus:border-cyan-500"
+              placeholder="e.g. Apex Mechanical LLC"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-400 mb-1">DBA / Trade Name</label>
+              <input
+                type="text"
+                value={formData.dba}
+                onChange={(e) => setFormData({ ...formData, dba: e.target.value })}
+                className="w-full p-2 bg-slate-950 border border-slate-800 rounded text-xs text-white focus:outline-none focus:border-cyan-500"
+                placeholder="Leave blank if identical"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-400 mb-1">Phone Number</label>
+              <input
+                type="text"
+                value={formData.phone_number}
+                onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+                className="w-full p-2 bg-slate-950 border border-slate-800 rounded text-xs text-white focus:outline-none focus:border-cyan-500"
+                placeholder="(702) 555-0199"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-400 mb-1">Decision Maker</label>
+              <input
+                type="text"
+                value={formData.decision_maker}
+                onChange={(e) => setFormData({ ...formData, decision_maker: e.target.value })}
+                className="w-full p-2 bg-slate-950 border border-slate-800 rounded text-xs text-white focus:outline-none focus:border-cyan-500"
+                placeholder="Owner / GM name"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-400 mb-1">Assign To</label>
+              <select
+                value={formData.assigned_to}
+                onChange={(e) => setFormData({ ...formData, assigned_to: e.target.value })}
+                className="w-full p-2 bg-slate-950 border border-slate-800 rounded text-xs text-white focus:outline-none focus:border-cyan-500"
+              >
+                <option value="david">David</option>
+                <option value="zach">Zach</option>
+                <option value="unassigned">Unassigned</option>
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-400 mb-1">Street Address</label>
+            <input
+              type="text"
+              value={formData.address}
+              onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+              className="w-full p-2 bg-slate-950 border border-slate-800 rounded text-xs text-white focus:outline-none focus:border-cyan-500"
+              placeholder="1234 S Eastern Ave"
+            />
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-400 mb-1">City</label>
+              <input
+                type="text"
+                value={formData.city}
+                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                className="w-full p-2 bg-slate-950 border border-slate-800 rounded text-xs text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-400 mb-1">State</label>
+              <input
+                type="text"
+                maxLength={2}
+                value={formData.state}
+                onChange={(e) => setFormData({ ...formData, state: e.target.value.toUpperCase() })}
+                className="w-full p-2 bg-slate-950 border border-slate-800 rounded text-xs text-white uppercase"
+              />
+            </div>
+            <div>
+              <label className="block text-[11px] font-semibold text-slate-400 mb-1">Zip Code</label>
+              <input
+                type="text"
+                value={formData.zip_code}
+                onChange={(e) => setFormData({ ...formData, zip_code: e.target.value })}
+                className="w-full p-2 bg-slate-950 border border-slate-800 rounded text-xs text-white"
+                placeholder="89012"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-400 mb-1">Initial Notes</label>
+            <textarea
+              rows={2}
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              className="w-full p-2 bg-slate-950 border border-slate-800 rounded text-xs text-white placeholder-slate-600 focus:outline-none focus:border-slate-600"
+              placeholder="Walk-in lead, referral source, owner details..."
+            />
+          </div>
+
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-3.5 py-1.5 text-xs font-semibold text-slate-400 hover:text-white bg-slate-800 rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-3.5 py-1.5 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg disabled:opacity-50"
+            >
+              {loading ? 'Saving...' : 'Save Lead'}
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
