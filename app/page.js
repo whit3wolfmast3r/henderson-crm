@@ -5,7 +5,7 @@ import {
   Search, Globe, Phone, Star, MapPin, Mail,
   UserCheck, ExternalLink, Check, Copy, FileText, SearchCheck, 
   Loader2, Sparkles, X, Image as ImageIcon, Calendar, Video, CreditCard, IdCard,
-  Plus, MessageSquare, User
+  Plus, MessageSquare, User, LayoutGrid, Table, Map
 } from 'lucide-react';
 
 const DISPOSITIONS = [
@@ -93,6 +93,7 @@ export default function SalesCRM() {
   const [selectedAssignee, setSelectedAssignee] = useState('All');
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [jumpPage, setJumpPage] = useState(1);
   const [pagination, setPagination] = useState({ total: 0, totalPages: 1 });
   const [loading, setLoading] = useState(true);
   const [savedStatus, setSavedStatus] = useState({});
@@ -105,6 +106,19 @@ export default function SalesCRM() {
   const [activeSample, setActiveSample] = useState(FLYER_SAMPLES[0]);
 
   const saveTimers = useRef({});
+
+  // Synchronize jump input value when page changes via Prev/Next
+  useEffect(() => {
+    setJumpPage(page);
+  }, [page]);
+
+  const handleJumpSubmit = (e) => {
+    e.preventDefault();
+    const target = parseInt(jumpPage, 10);
+    if (!isNaN(target) && target >= 1 && target <= pagination.totalPages) {
+      setPage(target);
+    }
+  };
 
   const fetchBusinesses = async () => {
     setLoading(true);
@@ -240,39 +254,62 @@ export default function SalesCRM() {
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2.5 rounded-lg shadow transition"
-          >
-            <Plus className="w-4 h-4" /> Add Business
-          </button>
+        {/* View Switcher & Action Controls */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          <div className="inline-flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 shadow-inner">
+            <Link
+              href="/"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-cyan-600 text-white shadow"
+            >
+              <LayoutGrid className="w-3.5 h-3.5" /> Cards
+            </Link>
+            <Link
+              href="/table"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition"
+            >
+              <Table className="w-3.5 h-3.5" /> Spreadsheet
+            </Link>
+            <Link
+              href="/map"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition"
+            >
+              <Map className="w-3.5 h-3.5" /> Map
+            </Link>
+          </div>
 
-          <button
-            onClick={() => setShowCardModal(true)}
-            className="flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 text-xs font-bold px-3 py-2.5 rounded-lg shadow transition"
-          >
-            <IdCard className="w-4 h-4 text-cyan-400" /> David&apos;s Card
-          </button>
+          <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-lg shadow transition"
+            >
+              <Plus className="w-4 h-4" /> Add Business
+            </button>
 
-          <button
-            onClick={() => setShowPitchModal(true)}
-            className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold px-3 py-2.5 rounded-lg shadow transition"
-          >
-            <Sparkles className="w-4 h-4 text-amber-300" /> Pitch & Samples
-          </button>
+            <button
+              onClick={() => setShowCardModal(true)}
+              className="flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-cyan-300 border border-slate-700 text-xs font-bold px-3 py-2 rounded-lg shadow transition"
+            >
+              <IdCard className="w-4 h-4 text-cyan-400" /> David&apos;s Card
+            </button>
 
-          <Link
-            href="/deck"
-            target="_blank"
-            className="flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold px-3 py-2.5 rounded-lg shadow transition"
-          >
-            <ExternalLink className="w-3.5 h-3.5 text-cyan-400" /> Deck & Pricing
-          </Link>
+            <button
+              onClick={() => setShowPitchModal(true)}
+              className="flex items-center justify-center gap-1.5 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white text-xs font-bold px-3 py-2 rounded-lg shadow transition"
+            >
+              <Sparkles className="w-4 h-4 text-amber-300" /> Pitch & Samples
+            </button>
 
-          <div className="flex items-center justify-center text-xs bg-slate-900 border border-slate-800 px-3 py-2.5 rounded-lg text-slate-300">
-            Leads: <span className="text-cyan-400 font-bold ml-1">{pagination.total.toLocaleString()}</span>
+            <Link
+              href="/deck"
+              target="_blank"
+              className="flex items-center justify-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-bold px-3 py-2 rounded-lg shadow transition"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-cyan-400" /> Deck
+            </Link>
+
+            <div className="flex items-center justify-center text-xs bg-slate-900 border border-slate-800 px-3 py-2 rounded-lg text-slate-300">
+              Leads: <span className="text-cyan-400 font-bold ml-1">{pagination.total.toLocaleString()}</span>
+            </div>
           </div>
         </div>
       </header>
@@ -405,7 +442,6 @@ export default function SalesCRM() {
                     </div>
 
                     <div className="flex items-center gap-1.5 shrink-0">
-                      {/* Segmented Assignee Toggle */}
                       <div className="inline-flex bg-slate-950 p-0.5 rounded-lg border border-slate-800">
                         <button
                           type="button"
@@ -454,23 +490,22 @@ export default function SalesCRM() {
                     </span>
                   </div>
 
-                  {/* Phone Display Bar with Click-To-Dial, 1-Click SMS, & Copy */}
+                  {/* Phone Bar with Click-To-Dial, SMS, & Copy */}
                   <div className="mb-3 bg-slate-950/80 p-2 rounded-lg border border-slate-800">
                     {targetPhone ? (
                       <div className="flex items-center justify-between bg-slate-900 border border-slate-700/80 rounded-lg overflow-hidden group hover:border-cyan-500 transition-colors">
                         <a
                           href={`tel:${dialNumber}`}
-                          title="Click to dial with RingCentral / Phone"
+                          title="Click to dial"
                           className="flex items-center gap-2 flex-1 px-3 py-1.5 text-cyan-300 font-mono font-bold text-sm hover:text-cyan-200 transition-colors overflow-hidden"
                         >
                           <Phone className="w-4 h-4 text-cyan-400 shrink-0 group-hover:scale-110 transition-transform" />
                           <span className="truncate tracking-wide">{targetPhone}</span>
                         </a>
 
-                        {/* Direct SMS trigger */}
                         <a
                           href={`sms:${dialNumber}`}
-                          title="Open SMS App / Text Business"
+                          title="Send SMS"
                           className="px-2.5 py-2 text-sky-400 hover:text-sky-300 border-l border-slate-700/80 hover:bg-slate-800 transition-colors shrink-0"
                         >
                           <MessageSquare className="w-3.5 h-3.5" />
@@ -479,7 +514,7 @@ export default function SalesCRM() {
                         <button
                           type="button"
                           onClick={(e) => copyPhone(e, biz.id, targetPhone)}
-                          title="Copy phone number"
+                          title="Copy phone"
                           className="px-2.5 py-2 text-slate-400 hover:text-white border-l border-slate-700/80 hover:bg-slate-800 transition-colors shrink-0"
                         >
                           {copiedId === biz.id ? (
@@ -498,13 +533,12 @@ export default function SalesCRM() {
                     )}
                   </div>
 
-                  {/* OpenCorp Registry & Direct Calendly Demo Booking */}
+                  {/* OpenCorp & Calendly Links */}
                   <div className="grid grid-cols-2 gap-2 mb-3">
                     <a
                       href={`https://opencorporates.com/companies?jurisdiction_code=us_nv&q=${encodeURIComponent(lookupQuery)}`}
                       target="_blank"
                       rel="noopener noreferrer"
-                      title="Direct 1-click lookup on OpenCorporates Nevada"
                       className="inline-flex items-center justify-center gap-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs py-2 px-2 rounded-lg transition shadow text-center cursor-pointer select-none"
                     >
                       <SearchCheck className="w-3.5 h-3.5" /> OpenCorp NV
@@ -514,7 +548,6 @@ export default function SalesCRM() {
                       href="https://calendly.com/david-bldealz/demo"
                       target="_blank"
                       rel="noopener noreferrer"
-                      title="Book Demo on Calendly"
                       className="inline-flex items-center justify-center gap-1 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs py-2 px-2 rounded-lg transition shadow text-center cursor-pointer select-none"
                     >
                       <Calendar className="w-3.5 h-3.5" /> Book Demo
@@ -615,23 +648,42 @@ export default function SalesCRM() {
         </div>
       )}
 
-      {/* Pagination */}
+      {/* Interactive Pagination Bar with Direct Page Jump */}
       {pagination.totalPages > 1 && (
-        <div className="mt-8 flex items-center justify-center gap-3">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3 bg-slate-900/80 border border-slate-800 p-3 rounded-2xl max-w-fit mx-auto shadow-xl">
           <button
+            type="button"
             onClick={() => setPage((p) => Math.max(1, p - 1))}
             disabled={page === 1}
-            className="px-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs font-medium disabled:opacity-40 hover:bg-slate-800 transition"
+            className="px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 disabled:opacity-40 hover:bg-slate-800 hover:text-white transition"
           >
             Previous
           </button>
-          <span className="text-xs text-slate-400">
-            Page <span className="text-white font-semibold">{page}</span> of {pagination.totalPages}
-          </span>
+
+          <form onSubmit={handleJumpSubmit} className="flex items-center gap-2 text-xs text-slate-400 px-2">
+            <span>Page</span>
+            <input
+              type="number"
+              min={1}
+              max={pagination.totalPages}
+              value={jumpPage}
+              onChange={(e) => setJumpPage(e.target.value)}
+              className="w-16 text-center font-mono font-bold text-cyan-400 bg-slate-950 border border-slate-700 rounded-lg py-1.5 px-2 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 shadow-inner"
+            />
+            <span>of <strong className="text-white">{pagination.totalPages.toLocaleString()}</strong></span>
+            <button
+              type="submit"
+              className="bg-cyan-600 hover:bg-cyan-500 text-white font-bold px-3 py-1.5 rounded-lg text-xs transition shadow"
+            >
+              Go
+            </button>
+          </form>
+
           <button
+            type="button"
             onClick={() => setPage((p) => Math.min(pagination.totalPages, p + 1))}
             disabled={page === pagination.totalPages}
-            className="px-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs font-medium disabled:opacity-40 hover:bg-slate-800 transition"
+            className="px-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs font-semibold text-slate-300 disabled:opacity-40 hover:bg-slate-800 hover:text-white transition"
           >
             Next
           </button>
@@ -840,7 +892,6 @@ export default function SalesCRM() {
   );
 }
 
-// Modal Component for Inserting Off-Platform Leads
 function AddBusinessModal({ isOpen, onClose, onCreated }) {
   const [formData, setFormData] = useState({
     entity_name: '',
@@ -891,7 +942,6 @@ function AddBusinessModal({ isOpen, onClose, onCreated }) {
         onCreated(newRecord);
         onClose();
       } else {
-        // Fallback optimistic append
         onCreated(newRecord);
         onClose();
       }
